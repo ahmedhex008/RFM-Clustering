@@ -24,12 +24,18 @@ def validate_rfm_columns(df: pd.DataFrame) -> None:
 def clean_rfm(df: pd.DataFrame) -> pd.DataFrame:
     validate_rfm_columns(df)
     out = df.copy()
-    out = out.drop_duplicates(subset=["Buyer"])
+    
+    # Convert to numeric and remove NaN
     for col in RFM_FEATURES:
         out[col] = pd.to_numeric(out[col], errors="coerce")
     out = out.dropna(subset=RFM_FEATURES)
-    # RFM quantities cannot be negative.
+    
+    # Remove negative values (must come before drop_duplicates)
     out = out[(out["Recency"] >= 0) & (out["Frequency"] >= 0) & (out["Monetary"] >= 0)]
+    
+    # Remove duplicates after invalid rows are gone
+    out = out.drop_duplicates(subset=["Buyer"])
+    
     return out.reset_index(drop=True)
 
 def transform_rfm(
