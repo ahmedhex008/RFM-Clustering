@@ -21,22 +21,19 @@ def validate_rfm_columns(df: pd.DataFrame) -> None:
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
 
-def clean_rfm(df: pd.DataFrame) -> pd.DataFrame:
-    validate_rfm_columns(df)
-    out = df.copy()
+def clean_rfm(df):
+    """
+    Remove rows with invalid RFM values (negative or zero values).
     
-    # Convert to numeric and remove NaN
-    for col in RFM_FEATURES:
-        out[col] = pd.to_numeric(out[col], errors="coerce")
-    out = out.dropna(subset=RFM_FEATURES)
-    
-    # Remove negative values (must come before drop_duplicates)
-    out = out[(out["Recency"] >= 0) & (out["Frequency"] >= 0) & (out["Monetary"] >= 0)]
-    
-    # Remove duplicates after invalid rows are gone
-    out = out.drop_duplicates(subset=["Buyer"])
-    
-    return out.reset_index(drop=True)
+    Args:
+        df: DataFrame with RFM columns
+        
+    Returns:
+        Cleaned DataFrame with only valid rows
+    """
+    # Remove rows where any RFM metric is negative or zero
+    df_clean = df[(df["Recency"] > 0) & (df["Frequency"] > 0) & (df["Monetary"] > 0)].copy()
+    return df_clean
 
 def transform_rfm(
     df: pd.DataFrame,
