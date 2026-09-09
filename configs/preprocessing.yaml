@@ -1,0 +1,7 @@
+preprocessing:
+  log_transform: true
+  clip_quantiles: true
+  lower_quantile: 0.01
+  upper_quantile: 0.99
+  scaler: "standard"
+  scaler_path: "models/scaler.pkl"

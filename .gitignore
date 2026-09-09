@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.env
+.DS_Store
+.ipynb_checkpoints/
+
+# MLflow local artifacts/database
+mlruns/
+mlartifacts/
+*.db
+
+# Hydra outputs
+outputs/
+multirun/
+
+# Generated ML artifacts (DVC can track these)
+reports/
+models/
+data/processed/

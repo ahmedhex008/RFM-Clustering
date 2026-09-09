@@ -1,0 +1,147 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: uv run python pipeline/prepare.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 48f2b15abc831260af6899990b82058e
+      size: 336
+    - path: configs/data.yaml
+      hash: md5
+      md5: 472fe27e1e4f0c4115cfcaa888df7a4b
+      size: 148
+    - path: data/raw/Final_File.xlsx
+      hash: md5
+      md5: 9f077f32ba053d5c210c08c79d0dbfd5
+      size: 166484
+    - path: pipeline/prepare.py
+      hash: md5
+      md5: 329ee864bd48ea1a0d6c29647476b157
+      size: 715
+    - path: src/data_preprocessing.py
+      hash: md5
+      md5: 391e24c9b17c1cbff71450b536c08dd7
+      size: 2146
+    outs:
+    - path: data/processed/rfm_processed.csv
+      hash: md5
+      md5: 1e97c25691db68adc940707952970ace
+      size: 164934
+  preprocess:
+    cmd: uv run python pipeline/preprocess.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 48f2b15abc831260af6899990b82058e
+      size: 336
+    - path: configs/data.yaml
+      hash: md5
+      md5: 472fe27e1e4f0c4115cfcaa888df7a4b
+      size: 148
+    - path: configs/preprocessing.yaml
+      hash: md5
+      md5: 028ebbb55b3638152a6e11f2f1f0228a
+      size: 162
+    - path: data/processed/rfm_processed.csv
+      hash: md5
+      md5: 1e97c25691db68adc940707952970ace
+      size: 164934
+    - path: pipeline/preprocess.py
+      hash: md5
+      md5: 5c337ddaf58a7067cc05ae2e74b3066b
+      size: 1164
+    - path: src/data_preprocessing.py
+      hash: md5
+      md5: 391e24c9b17c1cbff71450b536c08dd7
+      size: 2146
+    outs:
+    - path: data/processed/X_processed.csv
+      hash: md5
+      md5: a527397544a0d43b9d845805fc816c2b
+      size: 234889
+    - path: models/scaler.pkl
+      hash: md5
+      md5: 005c5a18cd0e364b949e57e957cc1d10
+      size: 927
+  train:
+    cmd: uv run python pipeline/train.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 48f2b15abc831260af6899990b82058e
+      size: 336
+    - path: configs/model.yaml
+      hash: md5
+      md5: 4ad539442d594d94eba20a9c77e72533
+      size: 128
+    - path: data/processed/X_processed.csv
+      hash: md5
+      md5: a527397544a0d43b9d845805fc816c2b
+      size: 234889
+    - path: pipeline/train.py
+      hash: md5
+      md5: 4dd945bbdb42d6aa3a2cb2f1a2a7e209
+      size: 2294
+    - path: src/clustering.py
+      hash: md5
+      md5: bcc5f58450de8e61db5c42b1c07e0459
+      size: 428
+    - path: src/utils.py
+      hash: md5
+      md5: d3199af8a22ce3e5432fc4b4dc3a3811
+      size: 596
+    outs:
+    - path: models/kmeans.pkl
+      hash: md5
+      md5: dee92047292896973a8bd522b5a68257
+      size: 16827
+    - path: reports/mlflow_run_id.txt
+      hash: md5
+      md5: ed1b1287114387d2fb8de670912b5b55
+      size: 32
+  evaluate:
+    cmd: uv run python pipeline/evaluate.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 48f2b15abc831260af6899990b82058e
+      size: 336
+    - path: configs/model.yaml
+      hash: md5
+      md5: 4ad539442d594d94eba20a9c77e72533
+      size: 128
+    - path: data/processed/X_processed.csv
+      hash: md5
+      md5: a527397544a0d43b9d845805fc816c2b
+      size: 234889
+    - path: data/processed/rfm_processed.csv
+      hash: md5
+      md5: 1e97c25691db68adc940707952970ace
+      size: 164934
+    - path: models/kmeans.pkl
+      hash: md5
+      md5: dee92047292896973a8bd522b5a68257
+      size: 16827
+    - path: pipeline/evaluate.py
+      hash: md5
+      md5: caadfce6f3ea0d27479a2f42ed4494b7
+      size: 3663
+    - path: src/evaluation.py
+      hash: md5
+      md5: 8ec0e079b13760689c64d6e728b3faef
+      size: 1097
+    outs:
+    - path: reports/cluster_summary.csv
+      hash: md5
+      md5: 3011bc7cbea5b95e67bda1a5ad41a335
+      size: 415
+    - path: reports/figures
+      hash: md5
+      md5: 1b95fee13e4b5d2103074c378fd29ebf.dir
+      size: 347613
+      nfiles: 3
+    - path: reports/metrics.json
+      hash: md5
+      md5: 2ea19b22c1d35c0ecd7a849acb2311b3
+      size: 164

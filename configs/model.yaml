@@ -1,0 +1,7 @@
+model:
+  algorithm: "kmeans"
+  n_clusters: 5
+  random_state: 42
+  n_init: 10
+  max_iter: 300
+  output_path: "models/kmeans.pkl"

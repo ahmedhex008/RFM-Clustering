@@ -1,0 +1,4 @@
+data:
+  raw_path: "data/raw/Final_File.xlsx"
+  processed_path: "data/processed/rfm_processed.csv"
+  features_path: "data/processed/X_processed.csv"

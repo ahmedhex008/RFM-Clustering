@@ -1,0 +1,25 @@
+defaults:
+  - data
+  - preprocessing
+  - model
+  - _self_
+
+seed: 42
+
+mlflow:
+  experiment_name: "RFM Customer Segmentation"
+  tracking_uri: ""
+  run_id_path: "reports/mlflow_run_id.txt"
+
+reports:
+  dir: "reports"
+  figures_dir: "reports/figures"
+
+evaluation:
+  min_k: 2
+  max_k: 10
+
+hydra:
+  job:
+    chdir: false
+  output_subdir: null

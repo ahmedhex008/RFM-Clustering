@@ -1,0 +1,52 @@
+stages:
+  prepare:
+    cmd: uv run python pipeline/prepare.py
+    deps:
+      - data/raw/Final_File.xlsx
+      - pipeline/prepare.py
+      - src/data_preprocessing.py
+      - configs/config.yaml
+      - configs/data.yaml
+    outs:
+      - data/processed/rfm_processed.csv
+
+  preprocess:
+    cmd: uv run python pipeline/preprocess.py
+    deps:
+      - data/processed/rfm_processed.csv
+      - pipeline/preprocess.py
+      - src/data_preprocessing.py
+      - configs/config.yaml
+      - configs/data.yaml
+      - configs/preprocessing.yaml
+    outs:
+      - data/processed/X_processed.csv
+      - models/scaler.pkl
+
+  train:
+    cmd: uv run python pipeline/train.py
+    deps:
+      - data/processed/X_processed.csv
+      - pipeline/train.py
+      - src/clustering.py
+      - src/utils.py
+      - configs/config.yaml
+      - configs/model.yaml
+    outs:
+      - models/kmeans.pkl
+      - reports/mlflow_run_id.txt
+
+  evaluate:
+    cmd: uv run python pipeline/evaluate.py
+    deps:
+      - data/processed/rfm_processed.csv
+      - data/processed/X_processed.csv
+      - models/kmeans.pkl
+      - pipeline/evaluate.py
+      - src/evaluation.py
+      - configs/config.yaml
+      - configs/model.yaml
+    outs:
+      - reports/metrics.json
+      - reports/cluster_summary.csv
+      - reports/figures
