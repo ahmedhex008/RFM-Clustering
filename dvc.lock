@@ -17,17 +17,17 @@ stages:
       size: 166484
     - path: pipeline/prepare.py
       hash: md5
-      md5: 329ee864bd48ea1a0d6c29647476b157
-      size: 715
+      md5: bb58f6cc7caeb5e3a63f84820643981a
+      size: 717
     - path: src/data_preprocessing.py
       hash: md5
-      md5: 391e24c9b17c1cbff71450b536c08dd7
-      size: 2146
+      md5: c3297e2c9c22ee2f4fae540019872330
+      size: 2100
     outs:
     - path: data/processed/rfm_processed.csv
       hash: md5
-      md5: 1e97c25691db68adc940707952970ace
-      size: 164934
+      md5: 7f04d4590620b9a0a043d899cc1d495e
+      size: 164901
   preprocess:
     cmd: uv run python pipeline/preprocess.py
     deps:
@@ -45,24 +45,24 @@ stages:
       size: 162
     - path: data/processed/rfm_processed.csv
       hash: md5
-      md5: 1e97c25691db68adc940707952970ace
-      size: 164934
+      md5: 7f04d4590620b9a0a043d899cc1d495e
+      size: 164901
     - path: pipeline/preprocess.py
       hash: md5
-      md5: 5c337ddaf58a7067cc05ae2e74b3066b
-      size: 1164
+      md5: e46f316a28d5699b10b7f34ca4643a30
+      size: 1166
     - path: src/data_preprocessing.py
       hash: md5
-      md5: 391e24c9b17c1cbff71450b536c08dd7
-      size: 2146
+      md5: c3297e2c9c22ee2f4fae540019872330
+      size: 2100
     outs:
     - path: data/processed/X_processed.csv
       hash: md5
-      md5: a527397544a0d43b9d845805fc816c2b
-      size: 234889
+      md5: 1fc6faf287c98d26bd56b6c174d195d0
+      size: 235344
     - path: models/scaler.pkl
       hash: md5
-      md5: 005c5a18cd0e364b949e57e957cc1d10
+      md5: f8b6103ddf52e1befab84eed063e8b7a
       size: 927
   train:
     cmd: uv run python pipeline/train.py
@@ -77,28 +77,28 @@ stages:
       size: 128
     - path: data/processed/X_processed.csv
       hash: md5
-      md5: a527397544a0d43b9d845805fc816c2b
-      size: 234889
+      md5: 1fc6faf287c98d26bd56b6c174d195d0
+      size: 235344
     - path: pipeline/train.py
       hash: md5
-      md5: 4dd945bbdb42d6aa3a2cb2f1a2a7e209
-      size: 2294
+      md5: 472192119e5e0a10f913b876d6666dc6
+      size: 2314
     - path: src/clustering.py
       hash: md5
-      md5: bcc5f58450de8e61db5c42b1c07e0459
-      size: 428
+      md5: 0cbdbdd967d8a14e2e4f5c5a36d7e7fd
+      size: 429
     - path: src/utils.py
       hash: md5
-      md5: d3199af8a22ce3e5432fc4b4dc3a3811
-      size: 596
+      md5: 82b812cf7ef6f4aca5408446e3aa9d28
+      size: 598
     outs:
     - path: models/kmeans.pkl
       hash: md5
-      md5: dee92047292896973a8bd522b5a68257
-      size: 16827
+      md5: b0b605511d273230f78d6b23d5a4e87d
+      size: 16823
     - path: reports/mlflow_run_id.txt
       hash: md5
-      md5: ed1b1287114387d2fb8de670912b5b55
+      md5: 9a2d3ef85528132bf58cb1dc8d4efd3b
       size: 32
   evaluate:
     cmd: uv run python pipeline/evaluate.py
@@ -113,35 +113,35 @@ stages:
       size: 128
     - path: data/processed/X_processed.csv
       hash: md5
-      md5: a527397544a0d43b9d845805fc816c2b
-      size: 234889
+      md5: 1fc6faf287c98d26bd56b6c174d195d0
+      size: 235344
     - path: data/processed/rfm_processed.csv
       hash: md5
-      md5: 1e97c25691db68adc940707952970ace
-      size: 164934
+      md5: 7f04d4590620b9a0a043d899cc1d495e
+      size: 164901
     - path: models/kmeans.pkl
       hash: md5
-      md5: dee92047292896973a8bd522b5a68257
-      size: 16827
+      md5: b0b605511d273230f78d6b23d5a4e87d
+      size: 16823
     - path: pipeline/evaluate.py
       hash: md5
-      md5: caadfce6f3ea0d27479a2f42ed4494b7
-      size: 3663
+      md5: 99d69b9d66cc15035386c52aefd32def
+      size: 3666
     - path: src/evaluation.py
       hash: md5
-      md5: 8ec0e079b13760689c64d6e728b3faef
-      size: 1097
+      md5: 8bf8f13ca49d9d6caa464fd8e047dc2c
+      size: 1138
     outs:
     - path: reports/cluster_summary.csv
       hash: md5
-      md5: 3011bc7cbea5b95e67bda1a5ad41a335
-      size: 415
+      md5: 430059df90fe1e34cc2bfb19c44f3ecd
+      size: 417
     - path: reports/figures
       hash: md5
-      md5: 1b95fee13e4b5d2103074c378fd29ebf.dir
-      size: 347613
+      md5: d509bb65ff299ee4c265c6921ee46ad9.dir
+      size: 344187
       nfiles: 3
     - path: reports/metrics.json
       hash: md5
-      md5: 2ea19b22c1d35c0ecd7a849acb2311b3
-      size: 164
+      md5: 4cde1b3b6f8ce5178d4d5867c31e87ac
+      size: 162
