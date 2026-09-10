@@ -1,11 +1,10 @@
 import numpy as np
+from dotenv import load_dotenv
 from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score,
     silhouette_score,
 )
-
-from dotenv import load_dotenv
 
 load_dotenv()
 

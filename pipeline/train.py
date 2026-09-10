@@ -12,12 +12,11 @@ import joblib
 import mlflow
 import mlflow.sklearn
 import pandas as pd
+from dotenv import load_dotenv
 from omegaconf import DictConfig
 
 from src.clustering import build_kmeans
 from src.utils import set_global_seed
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
