@@ -1,7 +1,8 @@
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
-from sklearn.preprocessing import StandardScaler, RobustScaler
+import pandas as pd
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
 RFM_FEATURES = ["Recency", "Frequency", "Monetary"]
 

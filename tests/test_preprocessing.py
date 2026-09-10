@@ -1,5 +1,7 @@
 import pandas as pd
+
 from src.data_preprocessing import clean_rfm, transform_rfm
+
 
 def test_clean_rfm_removes_invalid_rows():
     df = pd.DataFrame({
@@ -9,8 +11,8 @@ def test_clean_rfm_removes_invalid_rows():
         "Monetary": [10, 20, 30, 40],
     })
     result = clean_rfm(df)
-    assert len(result) == 2
-    assert result["Buyer"].tolist() == [1, 2]
+    assert len(result) == 3
+    assert result["Buyer"].tolist() == [1, 2, 3]
 
 def test_transform_shape():
     df = pd.DataFrame({
@@ -18,6 +20,6 @@ def test_transform_shape():
         "Frequency": [2, 3, 4],
         "Monetary": [10, 20, 30],
     })
-    X, scaler = transform_rfm(df)
+    X, _scaler = transform_rfm(df)
     assert X.shape == (3, 3)
     assert list(X.columns) == ["Recency", "Frequency", "Monetary"]

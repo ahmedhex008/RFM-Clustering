@@ -1,5 +1,6 @@
 from sklearn.cluster import KMeans
 
+
 def build_kmeans(
     n_clusters: int,
     random_state: int = 42,

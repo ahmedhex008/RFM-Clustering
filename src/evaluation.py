@@ -1,9 +1,10 @@
 import numpy as np
 from sklearn.metrics import (
-    silhouette_score,
-    davies_bouldin_score,
     calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
 )
+
 
 def clustering_metrics(X, labels) -> dict:
     unique = np.unique(labels)
@@ -13,7 +14,7 @@ def clustering_metrics(X, labels) -> dict:
         "silhouette_score": float(silhouette_score(X, labels)),
         "davies_bouldin_score": float(davies_bouldin_score(X, labels)),
         "calinski_harabasz_score": float(calinski_harabasz_score(X, labels)),
-        "n_clusters": int(len(unique)),
+        "n_clusters": len(unique),
     }
 
 def cluster_summary(original_df, labels):

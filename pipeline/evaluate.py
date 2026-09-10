@@ -5,15 +5,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import os
 import json
-import joblib
-import mlflow
-import matplotlib.pyplot as plt
-import pandas as pd
+import os
+
 import hydra
+import joblib
+import matplotlib.pyplot as plt
+import mlflow
+import pandas as pd
 from omegaconf import DictConfig
-from src.evaluation import clustering_metrics, cluster_summary, inertia_for_k
+
+from src.evaluation import cluster_summary, clustering_metrics, inertia_for_k
+
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):

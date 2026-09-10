@@ -7,7 +7,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from src.data_preprocessing import load_data, clean_rfm
+
+from src.data_preprocessing import clean_rfm, load_data
+
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):

@@ -6,14 +6,17 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import os
+
+import hydra
 import joblib
 import mlflow
 import mlflow.sklearn
-import hydra
 import pandas as pd
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
+
 from src.clustering import build_kmeans
 from src.utils import set_global_seed
+
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):
@@ -33,7 +36,7 @@ def main(cfg: DictConfig):
     )
 
     with mlflow.start_run(run_name=f"kmeans-k{cfg.model.n_clusters}") as run:
-        labels = model.fit_predict(X)
+        model.fit(X)
 
         mlflow.log_params({
             "algorithm": "kmeans",
