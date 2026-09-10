@@ -17,6 +17,9 @@ from omegaconf import DictConfig
 from src.clustering import build_kmeans
 from src.utils import set_global_seed
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):

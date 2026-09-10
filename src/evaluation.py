@@ -5,6 +5,9 @@ from sklearn.metrics import (
     silhouette_score,
 )
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def clustering_metrics(X, labels) -> dict:
     unique = np.unique(labels)
