@@ -22,8 +22,14 @@ from src.evaluation import cluster_summary, clustering_metrics, inertia_for_k
 def main(cfg: DictConfig):
     X = pd.read_csv(cfg.data.features_path)
     original = pd.read_csv(cfg.data.processed_path)
-    model = joblib.load(cfg.model.output_path)
-    labels = model.predict(X)
+    model_cfg = cfg.model[cfg.model.algorithm]
+    model = joblib.load(model_cfg.output_path)
+    if hasattr(model, "predict"):
+        labels = model.predict(X)
+    elif hasattr(model, "labels_"):
+        labels = model.labels_
+    else:
+        raise ValueError("Loaded clustering model cannot produce labels.")
 
     metrics = clustering_metrics(X, labels)
     summary = cluster_summary(original, labels)
@@ -36,38 +42,35 @@ def main(cfg: DictConfig):
     (reports / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     summary.to_csv(reports / "cluster_summary.csv")
 
-    # Elbow curve
-    ks = list(range(cfg.evaluation.min_k, cfg.evaluation.max_k + 1))
-    inertias = [inertia_for_k(X, k, cfg.model.random_state, cfg.model.n_init) for k in ks]
-    plt.figure(figsize=(8, 5))
-    plt.plot(ks, inertias, marker="o")
-    plt.xlabel("Number of clusters (K)")
-    plt.ylabel("Inertia")
-    plt.title("Elbow Curve")
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    elbow_path = figures / "elbow_curve.png"
-    plt.savefig(elbow_path, dpi=150)
-    plt.close()
+    if cfg.model.algorithm == "kmeans":
+        ks = list(range(cfg.evaluation.min_k, cfg.evaluation.max_k + 1))
+        inertias = [inertia_for_k(X, k, model_cfg.random_state, model_cfg.n_init) for k in ks]
+        plt.figure(figsize=(8, 5))
+        plt.plot(ks, inertias, marker="o")
+        plt.xlabel("Number of clusters (K)")
+        plt.ylabel("Inertia")
+        plt.title("Elbow Curve")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(figures / "elbow_curve.png", dpi=150)
+        plt.close()
 
-    # Silhouette by K
-    from sklearn.cluster import KMeans
-    from sklearn.metrics import silhouette_score
-    silhouettes = []
-    for k in ks:
-        m = KMeans(n_clusters=k, random_state=cfg.model.random_state, n_init=cfg.model.n_init)
-        l = m.fit_predict(X)
-        silhouettes.append(silhouette_score(X, l))
-    plt.figure(figsize=(8, 5))
-    plt.plot(ks, silhouettes, marker="o")
-    plt.xlabel("Number of clusters (K)")
-    plt.ylabel("Silhouette score")
-    plt.title("Silhouette Score by K")
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    sil_path = figures / "silhouette_scores.png"
-    plt.savefig(sil_path, dpi=150)
-    plt.close()
+        from sklearn.cluster import KMeans
+        from sklearn.metrics import silhouette_score
+        silhouettes = []
+        for k in ks:
+            m = KMeans(n_clusters=k, random_state=model_cfg.random_state, n_init=model_cfg.n_init)
+            l = m.fit_predict(X)
+            silhouettes.append(silhouette_score(X, l))
+        plt.figure(figsize=(8, 5))
+        plt.plot(ks, silhouettes, marker="o")
+        plt.xlabel("Number of clusters (K)")
+        plt.ylabel("Silhouette score")
+        plt.title("Silhouette Score by K")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(figures / "silhouette_scores.png", dpi=150)
+        plt.close()
 
     # Cluster visualization using first two RFM dimensions
     plt.figure(figsize=(8, 5))
@@ -85,15 +88,21 @@ def main(cfg: DictConfig):
         mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(cfg.mlflow.experiment_name)
 
-    with mlflow.start_run(run_name=f"evaluation-k{cfg.model.n_clusters}") as run:
+    with mlflow.start_run(run_name=f"evaluation-{cfg.model.algorithm}") as run:
         mlflow.log_params({
-            "n_clusters": cfg.model.n_clusters,
+            "algorithm": cfg.model.algorithm,
             "evaluation_min_k": cfg.evaluation.min_k,
             "evaluation_max_k": cfg.evaluation.max_k,
         })
+        if cfg.model.algorithm == "kmeans":
+            mlflow.log_param("n_clusters", model_cfg.n_clusters)
         mlflow.log_metrics({
-            k: v for k, v in metrics.items()
-            if k != "n_clusters"
+            "silhouette_score": metrics["silhouette_score"],
+            "davies_bouldin_score": metrics["davies_bouldin_score"],
+            "calinski_harabasz_score": metrics["calinski_harabasz_score"],
+            "discovered_clusters": float(metrics["n_clusters"]),
+            "noise_points": float(metrics["noise_points"]),
+            "noise_ratio": metrics["noise_ratio"],
         })
         mlflow.set_tag("stage", "evaluation")
         mlflow.log_artifacts(str(figures), artifact_path="figures")

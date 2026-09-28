@@ -1,4 +1,4 @@
-from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN, KMeans
 
 
 def build_kmeans(
@@ -18,3 +18,19 @@ def fit_kmeans(X, **kwargs):
     model = build_kmeans(**kwargs)
     labels = model.fit_predict(X)
     return model, labels
+
+
+def build_dbscan(
+    eps: float = 0.5,
+    min_samples: int = 5,
+    metric: str = "euclidean",
+) -> DBSCAN:
+    return DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
+
+
+def build_model(algorithm: str, **kwargs):
+    if algorithm == "kmeans":
+        return build_kmeans(**kwargs)
+    if algorithm == "dbscan":
+        return build_dbscan(**kwargs)
+    raise ValueError(f"Unsupported clustering algorithm: {algorithm}")

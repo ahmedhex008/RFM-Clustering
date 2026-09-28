@@ -73,20 +73,20 @@ stages:
       size: 336
     - path: configs/model.yaml
       hash: md5
-      md5: 4ad539442d594d94eba20a9c77e72533
-      size: 128
+      md5: 9bc3c993ad76bdb203c0243003a3d5ef
+      size: 178
     - path: data/processed/X_processed.csv
       hash: md5
       md5: 1fc6faf287c98d26bd56b6c174d195d0
       size: 235344
     - path: pipeline/train.py
       hash: md5
-      md5: 472192119e5e0a10f913b876d6666dc6
-      size: 2314
+      md5: a2779c144cd6a2248b8e4e4f75f53fc3
+      size: 2756
     - path: src/clustering.py
       hash: md5
-      md5: 0cbdbdd967d8a14e2e4f5c5a36d7e7fd
-      size: 429
+      md5: 022dcb8453beff673889c8d6621cbac8
+      size: 868
     - path: src/utils.py
       hash: md5
       md5: 82b812cf7ef6f4aca5408446e3aa9d28
@@ -94,11 +94,11 @@ stages:
     outs:
     - path: models/kmeans.pkl
       hash: md5
-      md5: b0b605511d273230f78d6b23d5a4e87d
+      md5: 19c51babb10ef073ef8bca638002f642
       size: 16823
     - path: reports/mlflow_run_id.txt
       hash: md5
-      md5: 9a2d3ef85528132bf58cb1dc8d4efd3b
+      md5: 2c6c94fd4e79618bd5f7ca824e340fb4
       size: 32
   evaluate:
     cmd: uv run python pipeline/evaluate.py
@@ -109,8 +109,8 @@ stages:
       size: 336
     - path: configs/model.yaml
       hash: md5
-      md5: 4ad539442d594d94eba20a9c77e72533
-      size: 128
+      md5: 9bc3c993ad76bdb203c0243003a3d5ef
+      size: 178
     - path: data/processed/X_processed.csv
       hash: md5
       md5: 1fc6faf287c98d26bd56b6c174d195d0
@@ -121,16 +121,16 @@ stages:
       size: 164901
     - path: models/kmeans.pkl
       hash: md5
-      md5: b0b605511d273230f78d6b23d5a4e87d
+      md5: 19c51babb10ef073ef8bca638002f642
       size: 16823
     - path: pipeline/evaluate.py
       hash: md5
-      md5: 99d69b9d66cc15035386c52aefd32def
-      size: 3666
+      md5: 6b0991f78e8bfd6ecb8ed3efec46477e
+      size: 3956
     - path: src/evaluation.py
       hash: md5
-      md5: 8bf8f13ca49d9d6caa464fd8e047dc2c
-      size: 1138
+      md5: f9a4d1945e65937e48267961e5196024
+      size: 1479
     outs:
     - path: reports/cluster_summary.csv
       hash: md5
@@ -143,5 +143,5 @@ stages:
       nfiles: 3
     - path: reports/metrics.json
       hash: md5
-      md5: 4cde1b3b6f8ce5178d4d5867c31e87ac
-      size: 162
+      md5: 794b167ea938e0ed483a8076e7795363
+      size: 207

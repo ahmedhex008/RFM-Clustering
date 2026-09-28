@@ -4,7 +4,7 @@ An end-to-end, reproducible customer segmentation project using:
 
 - Python + uv
 - RFM features
-- KMeans clustering
+- KMeans and DBSCAN clustering
 - Hydra configuration
 - DVC data and pipeline versioning
 - MLflow experiment tracking
@@ -64,6 +64,20 @@ uv run python pipeline/preprocess.py
 uv run python pipeline/train.py
 uv run python pipeline/evaluate.py
 ```
+
+KMeans is the default. To train and evaluate DBSCAN, override the algorithm,
+output path, and density parameters:
+
+```bash
+uv run python pipeline/train.py model.algorithm=dbscan model.output_path=models/dbscan.pkl model.eps=0.5 model.min_samples=5
+uv run python pipeline/evaluate.py model.algorithm=dbscan model.output_path=models/dbscan.pkl
+```
+
+DBSCAN evaluation excludes noise points (`label=-1`) from clustering scores and
+reports the number and ratio of noise points in `metrics.json`.
+The MLflow training and evaluation runs also show `discovered_clusters`,
+`noise_points`, and `noise_ratio`. These metrics appear only in new runs, so
+rerun the commands after changing the pipeline.
 
 Or run the complete DVC pipeline:
 

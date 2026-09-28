@@ -15,7 +15,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from omegaconf import DictConfig
 
-from src.clustering import build_kmeans
+from src.clustering import build_model
 from src.utils import set_global_seed
 
 load_dotenv()
@@ -30,35 +30,49 @@ def main(cfg: DictConfig):
         mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(cfg.mlflow.experiment_name)
 
-    model = build_kmeans(
-        n_clusters=cfg.model.n_clusters,
-        random_state=cfg.model.random_state,
-        n_init=cfg.model.n_init,
-        max_iter=cfg.model.max_iter,
-    )
+    algorithm = cfg.model.algorithm
+    model_cfg = cfg.model[algorithm]
+    model_kwargs = {
+        key: model_cfg[key]
+        for key in ("n_clusters", "random_state", "n_init", "max_iter", "eps", "min_samples", "metric")
+        if key in model_cfg
+    }
+    model = build_model(algorithm, **model_kwargs)
 
-    with mlflow.start_run(run_name=f"kmeans-k{cfg.model.n_clusters}") as run:
+    run_name = f"{algorithm}-k{model_cfg.n_clusters}" if algorithm == "kmeans" else (
+        f"{algorithm}-eps{model_cfg.eps}-min{model_cfg.min_samples}"
+    )
+    with mlflow.start_run(run_name=run_name) as run:
         model.fit(X)
 
-        mlflow.log_params({
-            "algorithm": "kmeans",
-            "n_clusters": cfg.model.n_clusters,
-            "random_state": cfg.model.random_state,
-            "n_init": cfg.model.n_init,
-            "max_iter": cfg.model.max_iter,
+        params = {
+            "algorithm": algorithm,
             "features": ",".join(X.columns),
             "log_transform": cfg.preprocessing.log_transform,
             "scaler": cfg.preprocessing.scaler,
             "clip_quantiles": cfg.preprocessing.clip_quantiles,
-        })
-        mlflow.log_metric("inertia", float(model.inertia_))
+        }
+        params.update(model_kwargs)
+        mlflow.log_params(params)
+        if algorithm == "kmeans":
+            mlflow.log_metric("inertia", float(model.inertia_))
+            mlflow.log_metric("discovered_clusters", float(model.n_clusters))
+        else:
+            labels = model.labels_
+            noise_points = int((labels == -1).sum())
+            discovered_clusters = len(set(labels) - {-1})
+            mlflow.log_metrics({
+                "discovered_clusters": float(discovered_clusters),
+                "noise_points": float(noise_points),
+                "noise_ratio": float(noise_points / len(labels)),
+            })
         mlflow.set_tag("stage", "training")
         mlflow.set_tag("dvc_stage", "train")
 
-        model_path = Path(cfg.model.output_path)
+        model_path = Path(model_cfg.output_path)
         model_path.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(model, model_path)
-        mlflow.sklearn.log_model(model, name="kmeans_model")
+        mlflow.sklearn.log_model(model, name=f"{algorithm}_model")
         mlflow.log_artifact(str(model_path), artifact_path="local_model")
         run_id_path = Path(cfg.mlflow.run_id_path)
         run_id_path.parent.mkdir(parents=True, exist_ok=True)
