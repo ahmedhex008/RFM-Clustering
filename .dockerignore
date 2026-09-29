@@ -1,0 +1,20 @@
+.git/
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+
+# Mounted at runtime so datasets and generated artifacts stay outside the image.
+data/
+models/
+reports/
+mlruns/
+mlartifacts/
+*.db
+outputs/
+multirun/
+
+# Never copy local secrets or the example environment file into the image.
+.env
+.env.*

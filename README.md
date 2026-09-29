@@ -43,13 +43,13 @@ X_processed.csv
 train
       |
       v
-kmeans.pkl
+    kmeans.pkl + dbscan.pkl
       |
       v
 evaluate
       |
-      +--> metrics.json
-      +--> figures/
+      +--> reports/kmeans/
+      +--> reports/dbscan/
 ```
 
 ## Run
@@ -65,16 +65,12 @@ uv run python pipeline/train.py
 uv run python pipeline/evaluate.py
 ```
 
-KMeans is the default. To train and evaluate DBSCAN, override the algorithm,
-output path, and density parameters:
-
-```bash
-uv run python pipeline/train.py model.algorithm=dbscan model.output_path=models/dbscan.pkl model.eps=0.5 model.min_samples=5
-uv run python pipeline/evaluate.py model.algorithm=dbscan model.output_path=models/dbscan.pkl
-```
+The full pipeline trains and evaluates both KMeans and DBSCAN. Each algorithm
+gets its own model file, reports directory, and MLflow runs. Adjust their
+parameters in `configs/model.yaml` under `model.kmeans` and `model.dbscan`.
 
 DBSCAN evaluation excludes noise points (`label=-1`) from clustering scores and
-reports the number and ratio of noise points in `metrics.json`.
+reports the number and ratio of noise points in `reports/dbscan/metrics.json`.
 The MLflow training and evaluation runs also show `discovered_clusters`,
 `noise_points`, and `noise_ratio`. These metrics appear only in new runs, so
 rerun the commands after changing the pipeline.
@@ -88,33 +84,17 @@ dvc repro
 ## Hydra experiments
 
 ```bash
-uv run python pipeline/train.py model.n_clusters=3
-uv run python pipeline/train.py model.n_clusters=4
+uv run python pipeline/train.py model.kmeans.n_clusters=3
+uv run python pipeline/train.py model.kmeans.n_clusters=4
 uv run python pipeline/train.py preprocessing.scaler=robust
 uv run python pipeline/train.py preprocessing.log_transform=false
 ```
 
 ## MLflow
 
-Local:
-
-```bash
-uv run mlflow server --host 127.0.0.1 --port 5000
-```
-
-Then configure:
-
-```bash
-set MLFLOW_TRACKING_URI=http://127.0.0.1:5000
-```
-
-PowerShell:
-
-```powershell
-$env:MLFLOW_TRACKING_URI="http://127.0.0.1:5000"
-```
-
-For DagsHub, put the remote URI and credentials in `.env` and load them in your shell/environment. Never commit `.env`.
+Training and evaluation runs for both algorithms are logged to the DagsHub
+MLflow server configured by `MLFLOW_TRACKING_URI` and credentials in `.env`.
+Never commit `.env`.
 
 ## DVC
 

@@ -15,12 +15,19 @@ def clustering_metrics(X, labels) -> dict:
     scored_X = X[valid] if hasattr(X, "iloc") else X[valid]
     scored_labels = labels[valid]
     unique = np.unique(scored_labels)
-    if len(unique) < 2:
-        raise ValueError("At least 2 clusters are required for evaluation.")
+    scores = {
+        "silhouette_score": None,
+        "davies_bouldin_score": None,
+        "calinski_harabasz_score": None,
+    }
+    if 2 <= len(unique) < len(scored_labels):
+        scores = {
+            "silhouette_score": float(silhouette_score(scored_X, scored_labels)),
+            "davies_bouldin_score": float(davies_bouldin_score(scored_X, scored_labels)),
+            "calinski_harabasz_score": float(calinski_harabasz_score(scored_X, scored_labels)),
+        }
     return {
-        "silhouette_score": float(silhouette_score(scored_X, scored_labels)),
-        "davies_bouldin_score": float(davies_bouldin_score(scored_X, scored_labels)),
-        "calinski_harabasz_score": float(calinski_harabasz_score(scored_X, scored_labels)),
+        **scores,
         "n_clusters": len(unique),
         "noise_points": noise_points,
         "noise_ratio": float(noise_points / len(labels)),

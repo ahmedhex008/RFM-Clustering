@@ -34,7 +34,9 @@ stages:
       - configs/model.yaml
     outs:
       - models/kmeans.pkl
-      - reports/mlflow_run_id.txt
+      - models/dbscan.pkl
+      - reports/mlflow_run_id_kmeans.txt
+      - reports/mlflow_run_id_dbscan.txt
 
   evaluate:
     cmd: uv run python pipeline/evaluate.py
@@ -42,11 +44,11 @@ stages:
       - data/processed/rfm_processed.csv
       - data/processed/X_processed.csv
       - models/kmeans.pkl
+      - models/dbscan.pkl
       - pipeline/evaluate.py
       - src/evaluation.py
       - configs/config.yaml
       - configs/model.yaml
     outs:
-      - reports/metrics.json
-      - reports/cluster_summary.csv
-      - reports/figures
+      - reports/kmeans
+      - reports/dbscan

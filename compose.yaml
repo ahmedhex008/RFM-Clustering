@@ -1,0 +1,51 @@
+services:
+  mlflow:
+    build: .
+    command:
+      - uv
+      - run
+      - --frozen
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --allowed-hosts
+      - mlflow:5000,localhost:5000,127.0.0.1:5000
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      - --artifacts-destination
+      - /mlflow/artifacts
+      - --serve-artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  pipeline:
+    build: .
+    env_file:
+      - .env
+    environment:
+      MLFLOW_TRACKING_URI: https://dagshub.com/ahmedhex008/RFM_Clustering.mlflow
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+
+volumes:
+  mlflow_data:

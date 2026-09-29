@@ -20,6 +20,9 @@ from src.utils import set_global_seed
 
 load_dotenv()
 
+ALGORITHMS = ("kmeans", "dbscan")
+
+
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig):
     set_global_seed(cfg.seed)
@@ -30,55 +33,66 @@ def main(cfg: DictConfig):
         mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(cfg.mlflow.experiment_name)
 
-    algorithm = cfg.model.algorithm
-    model_cfg = cfg.model[algorithm]
-    model_kwargs = {
-        key: model_cfg[key]
-        for key in ("n_clusters", "random_state", "n_init", "max_iter", "eps", "min_samples", "metric")
-        if key in model_cfg
-    }
-    model = build_model(algorithm, **model_kwargs)
+    for algorithm in ALGORITHMS:
+        model_cfg = cfg.model[algorithm]
+        allowed_keys = (
+            ("n_clusters", "random_state", "n_init", "max_iter")
+            if algorithm == "kmeans"
+            else ("eps", "min_samples", "metric")
+        )
+        model_kwargs = {key: model_cfg[key] for key in allowed_keys if key in model_cfg}
+        model = build_model(algorithm, **model_kwargs)
 
-    run_name = f"{algorithm}-k{model_cfg.n_clusters}" if algorithm == "kmeans" else (
-        f"{algorithm}-eps{model_cfg.eps}-min{model_cfg.min_samples}"
-    )
-    with mlflow.start_run(run_name=run_name) as run:
-        model.fit(X)
+        run_name = (
+            f"kmeans-k{model_cfg.n_clusters}"
+            if algorithm == "kmeans"
+            else f"dbscan-eps{model_cfg.eps}-min{model_cfg.min_samples}"
+        )
+        with mlflow.start_run(run_name=run_name) as run:
+            model.fit(X)
 
-        params = {
-            "algorithm": algorithm,
-            "features": ",".join(X.columns),
-            "log_transform": cfg.preprocessing.log_transform,
-            "scaler": cfg.preprocessing.scaler,
-            "clip_quantiles": cfg.preprocessing.clip_quantiles,
-        }
-        params.update(model_kwargs)
-        mlflow.log_params(params)
-        if algorithm == "kmeans":
-            mlflow.log_metric("inertia", float(model.inertia_))
-            mlflow.log_metric("discovered_clusters", float(model.n_clusters))
-        else:
-            labels = model.labels_
-            noise_points = int((labels == -1).sum())
-            discovered_clusters = len(set(labels) - {-1})
-            mlflow.log_metrics({
-                "discovered_clusters": float(discovered_clusters),
-                "noise_points": float(noise_points),
-                "noise_ratio": float(noise_points / len(labels)),
-            })
-        mlflow.set_tag("stage", "training")
-        mlflow.set_tag("dvc_stage", "train")
+            params = {
+                "algorithm": algorithm,
+                "features": ",".join(X.columns),
+                "log_transform": cfg.preprocessing.log_transform,
+                "scaler": cfg.preprocessing.scaler,
+                "clip_quantiles": cfg.preprocessing.clip_quantiles,
+            }
+            params.update(model_kwargs)
+            mlflow.log_params(params)
 
-        model_path = Path(model_cfg.output_path)
-        model_path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(model, model_path)
-        mlflow.sklearn.log_model(model, name=f"{algorithm}_model")
-        mlflow.log_artifact(str(model_path), artifact_path="local_model")
-        run_id_path = Path(cfg.mlflow.run_id_path)
-        run_id_path.parent.mkdir(parents=True, exist_ok=True)
-        run_id_path.write_text(run.info.run_id, encoding="utf-8")
-        print(f"MLflow run: {run.info.run_id}")
-        print(f"Saved model to {model_path}")
+            if algorithm == "kmeans":
+                mlflow.log_metrics({
+                    "inertia": float(model.inertia_),
+                    "discovered_clusters": float(model.n_clusters),
+                })
+            else:
+                labels = model.labels_
+                noise_points = int((labels == -1).sum())
+                discovered_clusters = len(set(labels) - {-1})
+                mlflow.log_metrics({
+                    "discovered_clusters": float(discovered_clusters),
+                    "noise_points": float(noise_points),
+                    "noise_ratio": float(noise_points / len(labels)),
+                })
+
+            mlflow.set_tag("stage", "training")
+            mlflow.set_tag("dvc_stage", "train")
+
+            model_path = Path(model_cfg.output_path)
+            model_path.parent.mkdir(parents=True, exist_ok=True)
+            joblib.dump(model, model_path)
+            mlflow.sklearn.log_model(model, name=f"{algorithm}_model")
+            mlflow.log_artifact(str(model_path), artifact_path="local_model")
+
+            run_id_path = Path(cfg.mlflow.run_id_path).with_name(
+                f"mlflow_run_id_{algorithm}.txt"
+            )
+            run_id_path.parent.mkdir(parents=True, exist_ok=True)
+            run_id_path.write_text(run.info.run_id, encoding="utf-8")
+            print(f"{algorithm} MLflow run: {run.info.run_id}")
+            print(f"Saved {algorithm} model to {model_path}")
+
 
 if __name__ == "__main__":
     main()
