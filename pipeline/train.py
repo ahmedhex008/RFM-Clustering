@@ -33,7 +33,14 @@ def main(cfg: DictConfig):
         mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(cfg.mlflow.experiment_name)
 
-    for algorithm in ALGORITHMS:
+    selected_algorithm = cfg.model.algorithm
+    if selected_algorithm not in ALGORITHMS:
+        raise ValueError(
+            f"Unsupported clustering algorithm: {selected_algorithm}. "
+            f"Choose one of {', '.join(ALGORITHMS)}."
+        )
+
+    for algorithm in (selected_algorithm,):
         model_cfg = cfg.model[algorithm]
         allowed_keys = (
             ("n_clusters", "random_state", "n_init", "max_iter")

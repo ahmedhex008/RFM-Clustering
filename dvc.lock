@@ -73,16 +73,16 @@ stages:
       size: 336
     - path: configs/model.yaml
       hash: md5
-      md5: 9bc3c993ad76bdb203c0243003a3d5ef
-      size: 178
+      md5: 9ae8d6acc641a3844c59048e7e4dddea
+      size: 229
     - path: data/processed/X_processed.csv
       hash: md5
       md5: 1fc6faf287c98d26bd56b6c174d195d0
       size: 235344
     - path: pipeline/train.py
       hash: md5
-      md5: a2779c144cd6a2248b8e4e4f75f53fc3
-      size: 2756
+      md5: 230b98386b558dcde395f6bab688b948
+      size: 3391
     - path: src/clustering.py
       hash: md5
       md5: 022dcb8453beff673889c8d6621cbac8
@@ -92,13 +92,21 @@ stages:
       md5: 82b812cf7ef6f4aca5408446e3aa9d28
       size: 598
     outs:
+    - path: models/dbscan.pkl
+      hash: md5
+      md5: dda16c49261fb2791e94b395882725b1
+      size: 156303
     - path: models/kmeans.pkl
       hash: md5
-      md5: 19c51babb10ef073ef8bca638002f642
+      md5: 310e016b012222dbabd2256b261c5fd5
       size: 16823
-    - path: reports/mlflow_run_id.txt
+    - path: reports/mlflow_run_id_dbscan.txt
       hash: md5
-      md5: 2c6c94fd4e79618bd5f7ca824e340fb4
+      md5: 66b35f00351182de8b6b9efddbbf2521
+      size: 32
+    - path: reports/mlflow_run_id_kmeans.txt
+      hash: md5
+      md5: be3109d617002e1d11e789138077bdcc
       size: 32
   evaluate:
     cmd: uv run python pipeline/evaluate.py
@@ -109,8 +117,8 @@ stages:
       size: 336
     - path: configs/model.yaml
       hash: md5
-      md5: 9bc3c993ad76bdb203c0243003a3d5ef
-      size: 178
+      md5: 9ae8d6acc641a3844c59048e7e4dddea
+      size: 229
     - path: data/processed/X_processed.csv
       hash: md5
       md5: 1fc6faf287c98d26bd56b6c174d195d0
@@ -119,29 +127,30 @@ stages:
       hash: md5
       md5: 7f04d4590620b9a0a043d899cc1d495e
       size: 164901
+    - path: models/dbscan.pkl
+      hash: md5
+      md5: dda16c49261fb2791e94b395882725b1
+      size: 156303
     - path: models/kmeans.pkl
       hash: md5
-      md5: 19c51babb10ef073ef8bca638002f642
+      md5: 310e016b012222dbabd2256b261c5fd5
       size: 16823
     - path: pipeline/evaluate.py
       hash: md5
-      md5: 6b0991f78e8bfd6ecb8ed3efec46477e
-      size: 3956
+      md5: 2bef44ed5978e1fcfde0d9778b9c34cf
+      size: 4637
     - path: src/evaluation.py
       hash: md5
-      md5: f9a4d1945e65937e48267961e5196024
-      size: 1479
+      md5: d93a22bd3ebe01603412a8a34bb0a2d8
+      size: 1617
     outs:
-    - path: reports/cluster_summary.csv
+    - path: reports/dbscan
       hash: md5
-      md5: 430059df90fe1e34cc2bfb19c44f3ecd
-      size: 417
-    - path: reports/figures
-      hash: md5
-      md5: d509bb65ff299ee4c265c6921ee46ad9.dir
-      size: 344187
+      md5: 4270fbada1cf5f20a437721dcb30b7fd.dir
+      size: 216329
       nfiles: 3
-    - path: reports/metrics.json
+    - path: reports/kmeans
       hash: md5
-      md5: 794b167ea938e0ed483a8076e7795363
-      size: 207
+      md5: a10d8d95bcc32fc2b3c29a06123f5a59.dir
+      size: 349179
+      nfiles: 5

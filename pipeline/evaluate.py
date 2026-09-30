@@ -70,7 +70,14 @@ def main(cfg: DictConfig):
     reports_root = Path(cfg.reports.dir)
     reports_root.mkdir(parents=True, exist_ok=True)
 
-    for algorithm in ALGORITHMS:
+    selected_algorithm = cfg.model.algorithm
+    if selected_algorithm not in ALGORITHMS:
+        raise ValueError(
+            f"Unsupported clustering algorithm: {selected_algorithm}. "
+            f"Choose one of {', '.join(ALGORITHMS)}."
+        )
+
+    for algorithm in (selected_algorithm,):
         model_cfg = cfg.model[algorithm]
         model = joblib.load(model_cfg.output_path)
         if hasattr(model, "predict"):

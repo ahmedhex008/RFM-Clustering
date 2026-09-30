@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  api:
+    image: rfm-clustering-api:latest
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: bind
+        source: ./data/processed
+        target: /app/data/processed
+        read_only: true
+      - type: bind
+        source: ./models
+        target: /app/models
+        read_only: true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.labels.rfm-artifacts == true
+
+  streamlit:
+    image: rfm-clustering-streamlit:latest
+    environment:
+      RFM_API_URL: http://api:8000
+    ports:
+      - target: 8501
+        published: 8501
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  default:
+    driver: overlay

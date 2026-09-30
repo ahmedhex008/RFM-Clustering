@@ -1,4 +1,5 @@
 model:
+  algorithm: "kmeans"
   kmeans:
     n_clusters: 5
     random_state: 42
