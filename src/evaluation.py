@@ -12,7 +12,7 @@ def clustering_metrics(X, labels) -> dict:
     labels = np.asarray(labels)
     noise_points = int(np.sum(labels == -1))
     valid = labels != -1
-    scored_X = X[valid] if hasattr(X, "iloc") else X[valid]
+    scored_X = X[valid]
     scored_labels = labels[valid]
     unique = np.unique(scored_labels)
     scores = {

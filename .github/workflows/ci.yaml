@@ -3,10 +3,22 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  checks:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
 
@@ -14,15 +26,19 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
-      - name: Set up Python
-        run: uv python install 3.11
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
 
-      - name: Sync environment
-        run: uv sync --dev
+      - name: Install dependencies
+        run: uv sync --locked --dev --python ${{ matrix.python-version }}
 
       - name: Run tests
         run: uv run pytest
 
       - name: Lint
-        run: uv run ruff check src pipeline tests
+        run: uv run ruff check api src pipeline tests streamlit_app.py
