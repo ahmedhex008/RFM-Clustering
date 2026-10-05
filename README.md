@@ -17,13 +17,18 @@ An end-to-end, reproducible customer segmentation project using:
 The workflow in `.github/workflows/ci.yaml` runs on pushes, pull requests, and
 when started manually from the GitHub Actions tab. It checks Python 3.11, 3.12,
 and 3.13 by installing the locked project dependencies, running the test suite,
-and linting the application and test code with Ruff.
+reporting API and source coverage, and linting the application and test code
+with Ruff. Coverage XML reports are attached to each Python-version run as
+downloadable artifacts. A separate job builds both the API and Streamlit Docker
+images to catch container build errors.
 
 To use it, push this repository to GitHub and open the **Actions** tab. GitHub
 runs the checks automatically for new pushes and pull requests; select **CI**
 and **Run workflow** to start a manual run. A green result means the tests and
-lint checks passed on all three Python versions. If a check fails, open its run
-and inspect the failing job's logs.
+lint checks passed on all three Python versions and both images built
+successfully. Download a `coverage-python-*` artifact from the run's summary to
+inspect the XML coverage report. If a check fails, open its run and inspect
+the failing job's logs.
 
 ## RFM features
 
@@ -148,7 +153,7 @@ Open the app at `http://localhost:8501`. The API is available at
 `http://localhost:8000` and its documentation at `http://localhost:8000/docs`.
 Compose connects Streamlit to the API using the internal `http://api:8000`
 address and mounts the host's `models/` and `data/processed/` directories into
-the API container read-only. These artifacts are not baked into either image.
+the API container read-only, overriding the paths inside the API image.
 
 Stop both containers with:
 
@@ -159,16 +164,15 @@ docker compose down
 ### Deploy the API and UI to local Kubernetes with Minikube
 
 This manifest is for a local Minikube cluster. It uses the Docker images built
-from this repository and mounts the trained model and processed data from the
-project directory into the API pod read-only. Train the KMeans model and
-generate the processed data before deploying.
+from this repository. The trained model and processed data are uploaded from
+the project directory to Kubernetes Secrets and mounted into the API pod
+read-only, so no long-running Minikube host mount is needed. Train the KMeans
+model and generate the processed data before deploying.
 
 Install Minikube and kubectl if needed, then open a new PowerShell window. Make
-sure Docker Desktop is running:
+sure Docker Desktop is running and start the local cluster:
 
 ```powershell
-winget install -e --id Kubernetes.minikube
-winget install -e --id Kubernetes.kubectl
 minikube start --driver=docker
 ```
 
@@ -181,36 +185,39 @@ minikube image load rfm-clustering-api:latest
 minikube image load rfm-clustering-streamlit:latest
 ```
 
-In another PowerShell window, from the project root, mount the project
-directory into Minikube. Keep this command running for as long as the pods need
-the artifacts:
-
-```powershell
-$project = (Get-Location).Path
-minikube mount "${project}:/mnt/rfm-project"
-```
-
-Back in the first window, deploy the API and Streamlit:
+Apply the Kubernetes resources to create the namespace and workloads:
 
 ```powershell
 kubectl apply -f k8s/minikube.yaml
+```
+
+Upload the prediction artifacts into namespace-scoped Secrets:
+
+```powershell
+kubectl create secret generic rfm-models --from-file=models/kmeans.pkl --from-file=models/scaler.pkl -n rfm --dry-run=client -o yaml | kubectl apply --server-side -f -
+kubectl create secret generic rfm-processed-data --from-file=data/processed/rfm_processed.csv --from-file=data/processed/X_processed.csv -n rfm --dry-run=client -o yaml | kubectl apply --server-side -f -
+```
+
+Wait for the API and Streamlit deployments:
+
+```powershell
 kubectl rollout status deployment/api -n rfm
 kubectl rollout status deployment/streamlit -n rfm
 kubectl get pods,services -n rfm
 ```
 
-Forward the Streamlit service to your computer and open `http://localhost:8501`:
+Forward the Streamlit service to your computer and open `http://localhost:18501`:
 
 ```powershell
-kubectl port-forward -n rfm service/streamlit 8501:8501
+kubectl port-forward -n rfm service/streamlit 18501:8501
 ```
 
 To check API health, port-forward its internal service in a separate terminal
 and query its health endpoint:
 
 ```powershell
-kubectl port-forward -n rfm service/api 8000:8000
-Invoke-RestMethod http://localhost:8000/health
+kubectl port-forward -n rfm service/api 18000:8000
+Invoke-RestMethod http://localhost:18000/health
 ```
 
 Inspect a failing pod with `kubectl logs -n rfm deployment/api` or
@@ -220,10 +227,9 @@ Inspect a failing pod with `kubectl logs -n rfm deployment/api` or
 kubectl delete -f k8s/minikube.yaml
 ```
 
-This local manifest depends on Minikube's project mount and is not a
-multi-node/cloud storage solution. For a remote cluster, publish the images to
-a registry and replace the `hostPath` artifact mounts with storage accessible
-to the cluster.
+This setup is intended for local development. Kubernetes Secrets are not an
+encrypted artifact store by default; for a remote cluster, use appropriately
+secured secret management and persistent artifact storage.
 
 ### Deploy the API and UI with Docker Swarm
 
